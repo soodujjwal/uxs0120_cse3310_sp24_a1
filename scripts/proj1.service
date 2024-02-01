@@ -1,0 +1,13 @@
+[Unit]
+Description=webpoker
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=mvn exec:java -Dexec.mainClass=uta.cse3310.WebPoker
+WorkingDirectory=/home/project1/WebPoker
+
+[Install]
+WantedBy=multi-user.target
+

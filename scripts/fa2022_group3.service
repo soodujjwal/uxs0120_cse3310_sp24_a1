@@ -1,0 +1,13 @@
+Unit]
+Description=webpoker
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+ExecStart=mvn exec:java -Dexec.mainClass=uta.cse3310.App
+WorkingDirectory=/home/fa2022_group3
+
+[Install]
+WantedBy=multi-user.target
+
