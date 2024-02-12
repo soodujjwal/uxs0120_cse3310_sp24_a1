@@ -6,6 +6,7 @@ public class Game {
     public PlayerType[] Button;
     public String[] Msg;
     public int GameId;
+    public String[] bottomMsg;
 
     Game() {
         Button = new PlayerType[9];
@@ -15,6 +16,7 @@ public class Game {
         }
 
         Msg = new String[2];
+        bottomMsg = new String[5];
         Players = PlayerType.XPLAYER;
         CurrentTurn = PlayerType.NOPLAYER;
         Msg[0] = "Waiting for other player to join";

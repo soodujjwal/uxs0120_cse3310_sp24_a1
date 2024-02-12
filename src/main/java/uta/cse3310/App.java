@@ -1,41 +1,3 @@
-
-// This is example code provided to CSE3310 Fall 2022
-// You are free to use as is, or changed, any of the code provided
-
-// Please comply with the licensing requirements for the
-// open source packages being used.
-
-// This code is based upon, and derived from the this repository
-//            https:/thub.com/TooTallNate/Java-WebSocket/tree/master/src/main/example
-
-// http server include is a GPL licensed package from
-//            http://www.freeutils.net/source/jlhttp/
-
-/*
- * Copyright (c) 2010-2020 Nathan Rajlich
- *
- *  Permission is hereby granted, free of charge, to any person
- *  obtaining a copy of this software and associated documentation
- *  files (the "Software"), to deal in the Software without
- *  restriction, including without limitation the rights to use,
- *  copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the
- *  Software is furnished to do so, subject to the following
- *  conditions:
- *
- *  The above copyright notice and this permission notice shall be
- *  included in all copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- *  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- *  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- *  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- *  OTHER DEALINGS IN THE SOFTWARE.
- */
-
 package uta.cse3310;
 
 import java.io.BufferedReader;
@@ -64,6 +26,10 @@ public class App extends WebSocketServer {
   Vector<Game> ActiveGames = new Vector<Game>();
 
   int GameId = 1;
+  int GamesPlayed = 0;
+  int WinsX = 0;
+  int WinsY = 0;
+  int Draws = 0;
 
   public App(int port) {
     super(new InetSocketAddress(port));
@@ -96,7 +62,7 @@ public class App extends WebSocketServer {
     // No matches ? Create a new Game.
     if (G == null) {
       G = new Game();
-      G.GameId = GameId;
+      G.GameId = ActiveGames.size();
       GameId++;
       // Add the first player
       G.Players = uta.cse3310.PlayerType.XPLAYER;
@@ -120,6 +86,8 @@ public class App extends WebSocketServer {
     conn.send(gson.toJson(E));
     System.out.println(gson.toJson(E));
 
+    renderBottomMsg(G);
+
     // The state of the game has changed, so lets send it to everyone
     String jsonString;
     jsonString = gson.toJson(G);
@@ -134,6 +102,8 @@ public class App extends WebSocketServer {
     System.out.println(conn + " has closed");
     // Retrieve the game tied to the websocket connection
     Game G = conn.getAttachment();
+    renderBottomMsg(G);
+    ActiveGames.remove(G);
     G = null;
   }
 
@@ -150,7 +120,31 @@ public class App extends WebSocketServer {
 
     // Get our Game Object
     Game G = conn.getAttachment();
+    System.out.println(G);
     G.Update(U);
+
+    if (G.Msg[0] == "You Win!" || G.Msg[1] == "You Win!") {
+      GamesPlayed++;
+
+      // x wins
+      if (G.Msg[0] == "You Win!" && G.Msg[1] == "You Lose!") {
+        WinsX++;
+        renderBottomMsg(G);
+      }
+
+      // y wins
+      if (G.Msg[0] == "You Lose!" && G.Msg[1] == "You Win!") {
+        WinsY++;
+        renderBottomMsg(G);
+      }
+    }
+
+    if (G.Msg[0] == "Draw" || G.Msg[1] == "Draw") {
+      GamesPlayed++;
+      Draws++;
+    }
+    renderBottomMsg(G);
+    ActiveGames.remove(G);
 
     // send out the game state every time
     // to everyone
@@ -159,6 +153,14 @@ public class App extends WebSocketServer {
 
     System.out.println(jsonString);
     broadcast(jsonString);
+  }
+
+  private void renderBottomMsg(Game G) {
+    G.bottomMsg[0] = "Number of games played: " + GamesPlayed;
+    G.bottomMsg[1] = "Number of games won by X: " + WinsX;
+    G.bottomMsg[2] = "Number of games won by O: " + WinsY;
+    G.bottomMsg[3] = "Number of games ended in draw: " + Draws;
+    G.bottomMsg[4] = "Number of concurrent games in progress: " + ActiveGames.size();
   }
 
   @Override

@@ -29,6 +29,8 @@
     </tr>
 </table>
 
+<label id="bottomMsg"></label>
+
 <script>
     var idx = -1;
     var gameid = -1;
@@ -57,14 +59,16 @@
     ButtonStateToDisplay.set("NOPLAYER", " ");
     connection.onmessage = function (evt) {
         var msg;
+        var gamesPlayed = 0;
         msg = evt.data;
 
         console.log("Message received: " + msg);
         const obj = JSON.parse(msg);
+        console.log("======> the msg: " + msg);
 
         if ('YouAre' in obj) {
             if (obj.YouAre == "XPLAYER") {
-                idx = 0;
+                idx = 0;     
             }
             else {
                 idx = 1;
@@ -90,6 +94,7 @@
 
                 // the message line
                 document.getElementById("topMessage").innerHTML = obj.Msg[idx];
+                document.getElementById("bottomMsg").innerHTML = obj.bottomMsg[0] +"<br>" + obj.BottomMsg[1] +"<br>" + obj.BottomMsg[2] +"<br>" + obj.BottomMsg[3] +"<br>" + obj.BottomMsg[4] +"<br>";
             }
         }
     }
